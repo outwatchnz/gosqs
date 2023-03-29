@@ -7,6 +7,7 @@ import (
 	"log"
 	"time"
 
+	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/sqs"
 )
 
@@ -146,6 +147,11 @@ var (
 //
 // When a new message is received, it runs in a separate go-routine that will handle the full consuming of the message, error reporting
 // and deleting
+
+type RouteStruct struct {
+	Route string `json:"route"`
+}
+
 func (c *consumer) Consume() {
 	jobs := make(chan *message)
 	for w := 1; w <= c.workerPool; w++ {
@@ -161,13 +167,21 @@ func (c *consumer) Consume() {
 		}
 
 		for _, m := range output.Messages {
-			if _, ok := m.MessageAttributes["route"]; !ok {
+			var route RouteStruct
+			if _, ok := m.MessageAttributes["route"]; ok {
+				jobs <- newMessage(m)
+			} else if json.Unmarshal([]byte(*m.Body), &route); err == nil {
+				if route.Route != "" {
+					m.MessageAttributes = make(map[string]*sqs.MessageAttributeValue)
+					m.MessageAttributes["route"] = &sqs.MessageAttributeValue{DataType: aws.String("string"), StringValue: aws.String(route.Route)}
+					jobs <- newMessage(m)
+				}
 				//a message will be sent to the DLQ automatically after 4 tries if it is received but not deleted
+			} else {
 				c.Logger().Println(ErrNoRoute.Error())
 				continue
 			}
 
-			jobs <- newMessage(m)
 		}
 	}
 }
