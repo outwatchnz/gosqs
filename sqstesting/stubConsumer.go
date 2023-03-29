@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/qhenkart/gosqs"
+	"github.com/outwatchnz/gosqs"
 )
 
 // StubMessage provides a stub framework for consumer unit tests
@@ -89,7 +89,7 @@ func (sm *StubMessage) Attribute(key string) string {
 
 // StubConsumer provides a stub framework for consumer unit tests
 //
-// SNS messages event names will go into the DispatcherMessages string array
+// # SNS messages event names will go into the DispatcherMessages string array
 //
 // Direct Messages to SQS will go into a map[string]string which defines
 // the queueName as the key and the event as the value. If a message is
@@ -145,7 +145,7 @@ func (c *StubConsumer) RegisterHandler(name string, h gosqs.Handler, a ...gosqs.
 
 // StubPublisher provides a stub framework for service unit tests
 //
-// SNS messages event names will go into the DispatcherMessages string array
+// # SNS messages event names will go into the DispatcherMessages string array
 //
 // Direct Messages to SQS will go into a map[string]string which defines
 // the queueName as the key and the event as the value. If a message is
